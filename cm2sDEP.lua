@@ -1,23 +1,37 @@
---this is the core dependency for all structure files
+--this is the core dependancy for all structure files
 --this file is the main file to get forked in case of porting to luau/lua, aswell as making a cm2Lua version
-package.path="?.lua" -- THIS IS ENVIRONMENT SPECIFIC AND REQUIRES CHANGING BASED ON YOUR HEIRACHY
 local cm2Lua=require("OPTcm2Lua")
 local dep = {}
-
+--yoinked from https://gist.github.com/haggen/2fd643ea9a261fea2094
+math.randomseed(os.time())
+function randstring(length)
+	local res = ""
+	for i = 1, length do
+		res = res .. string.char(math.random(97, 122))
+	end
+	return res
+end
+local zID=0
 function dep:newSave(blocks,wires)
     local save=cm2Lua.new(blocks,wires)
     save._inputs={}
-    save._Iid=1
     save._outputs={}
-    save._Oid=1
-    function save:addInput(blockID)
-        self._inputs[self._Iid]=blockID
-        self._Iid = self._Iid + 1
-
+    save._hash=randstring(10)
+    save._zID=zID
+    zID=zID+1
+    function save:manifestInput(name)
+        self._inputs[name]={_hash=self._hash}
     end
-    function save:addOutput(blockID)
-        save._outputs[save._Oid]=blockID
-        save._Oid=save._Oid+1
+    function save:addInput(block,name)
+        if self._inputs[name]==nil then error("{cm2sDEP} Error: no input manifested called "..name) end
+        self._inputs[name][#self._inputs[name]+1]=block 
+    end
+    function save:manifestOutput(name)
+        self._outputs[name]={_hash=self._hash}
+    end
+    function save:addOutput(block,name)
+        if not self._outputs[name] then error("{cm2sDEP} Error: no output manifested called "..name) end
+        self._outputs[name][#self._outputs[name]+1]=block
     end
     return save
 end
@@ -58,7 +72,7 @@ function dep:manStringify(man,options)
     outStr=outStr..'├┄Functions'..string.rep('┄',menuWidth-12)..'┤\n'
     for i=1,#man.functions do
         local manfunc=man.functions[i]
-        outStr=outStr..'├┬─'..manfunc.name..string.rep(' ',menuWidth-4-#manfunc.name)..'│\n'
+        outStr=outStr..'├┬─'..manfunc.name.."()"..string.rep(' ',menuWidth-6-#manfunc.name)..'│\n'
         outStr=outStr..'│├─Desc:'
         descSplitted=strSplit(manfunc.desc,' ')
         leftSideWidth=8
