@@ -2,66 +2,60 @@
 --this file is the main file to get forked in case of porting to luau/lua, aswell as making a cm2Lua version or somehow using other reg manips
 
 local cm2Lua = require("OPTcm2Lua")
+local zIndex = 0
 local dep = {}
 
---yoinked from https://gist.github.com/haggen/2fd643ea9a261fea2094
 math.randomseed(os.time())
-function randstring(length)
-    local res = ""
-    for i = 1, length do
-        res = res .. string.char(math.random(97, 122))
+local function randstring(length)
+    local result = ""
+    for _ = 1, length do
+        result = result .. string.char(math.random(97, 122))
     end
-    return res
+    return result
 end
 
--- im not sure which one takes priority, cm2s.lua's structure.STRUCTZ or this, and quite frankly im just gonna let it stay
-local zID = 0 -- tells the save what zindex to use
 function dep:newSave(blocks, wires)
     local save = cm2Lua.new(blocks, wires)
     save._inputs = {}
     save._outputs = {}
     save._hash = randstring(10) -- hashing for the connection magic took place in cm2s.lua
-    save._zID = zID
-    zID = zID + 1
+    save._zIndex = zIndex
+    zIndex = zIndex + 1
 
     function save:manifestInput(name)
-        self._inputs[name] = {_hash = self._hash}
-    end
-
-    function save:addInput(block, name)
-        if self._inputs[name] == nil then
-            error("{cm2sDEP} Error: no input manifested called " .. name)
-        end
-        self._inputs[name][#self._inputs[name] + 1] = block
+        self._inputs[name] = { _hash = self._hash }
     end
 
     function save:manifestOutput(name)
-        self._outputs[name] = {_hash = self._hash}
+        self._outputs[name] = { _hash = self._hash }
+    end
+
+    function save:addInput(block, name)
+        assert(self._inputs[name] == nil, "{cm2sDEP} Error: no input manifested called " .. name)
+        self._inputs[name][#self._inputs[name] + 1] = block
     end
 
     function save:addOutput(block, name)
-        if not self._outputs[name] then
-            error("{cm2sDEP} Error: no output manifested called " .. name)
-        end
+        assert(not self._outputs[name], "{cm2sDEP} Error: no output manifested called " .. name)
         self._outputs[name][#self._outputs[name] + 1] = block
     end
 
     return save
 end
--- yoinked from https://stackoverflow.com/questions/1426954/split-string-in-lua
-local function strSplit(inputstr, sep)
-    if sep == nil then
-        sep = "%s"
+
+local function strSplit(inputString, separator)
+    separator = separator or "%s"
+    local result = {}
+    for str in string.gmatch(inputString, "([^" .. separator .. "]+)") do
+        table.insert(result, str)
     end
-    local t = {}
-    for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
-        table.insert(t, str)
-    end
-    return t
+    return result
 end
 
---no reason to look at this function its just for generating the manual ui
+-- no reason to look at this function its just for generating the manual ui
+-- i give up. - moony
 function dep:manStringify(man, options)
+    options = options or {}
     local menuWidth = options.menuWidth or 40
     --│├─┰╭╮╰╯
     local outStr = ""

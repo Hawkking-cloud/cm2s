@@ -5,73 +5,73 @@ local OPTcm2Lua = {}
 OPTcm2Lua.__index = OPTcm2Lua
 
 local bit = require("bit")
+local function blockHash(x, y, z)
+  return bit.bxor(x * 73856093, y * 19349663, z * 83492791)
+end
 
 function OPTcm2Lua.new(PREALLOCblocks, PREALLOCconnections)
     local self = setmetatable({}, OPTcm2Lua)
     self._blocks = {}
     self._connections = {}
-    if PREALLOCblocks then
-        for i = 1, PREALLOCblocks do
-            self._blocks[i] = false
-        end
-    end
-    if PREALLOCconnections then
-        for i = 1, PREALLOCconnections do
-            self._connections[i] = false
-        end
-    end
-    self._bid = 1
-    self._cid = 1
     self._blockHash = {}
+    self._blockIndex = 1
+    self._connectionIndex = 1
+    self.allocateBlocks(PREALLOCblocks)
+    self.allocateConnections(PREALLOCconnections)
+
     return self
 end
-function OPTcm2Lua:allocateBlocks(amt)
-    for i = 1, amt do
-        self._blocks[self._bid + i] = false
+
+function OPTcm2Lua:allocateBlocks(amount)
+    amount = amount + self._blockIndex
+    for i = self._blockIndex, amount do
+        self._blocks[i] = false
     end
 end
-function OPTcm2Lua:allocateConnections(amt)
-    for i = 1, amt do
-        self._connections[self._cid + i] = false
+
+function OPTcm2Lua:allocateConnections(amount)
+    amount = amount + self._connectionIndex
+    for i = self._connectionIndex, amount do
+        self._connections[i] = false
     end
 end
-function OPTcm2Lua:addBlock(id, x, y, z)
+
+function OPTcm2Lua:addBlock(id, x, y, z, meta)
     x = x or 0
     y = y or 0
     z = z or 0
-    local bid = self._bid
-    local blockStr = id .. ",0," .. x .. "," .. y .. "," .. z .. ","
+    meta = meta or ""
 
-    self._blocks[bid] = blockStr
-    self._bid = bid + 1
-    self._blockHash[bit.bxor(x * 73856093, y * 19349663, z * 83492791)] = bid
-    return bid
+    local blockStr = id .. ",0," .. x .. "," .. y .. "," .. z .. ","
+    self._blocks[self._blockIndex] = blockStr
+    self._blockIndex = self._blockIndex + 1
+    self._blockHash[blockHash(x, y, z)] = self._blockIndex
 end
---TODO: implement block hashing for this
+
+-- TODO: implement block hashing for this
 function OPTcm2Lua:addBlockRaw(string)
-    local bid = self._bid
-    self._blocks[bid] = string
-    self._bid = bid + 1
-    return bid
+    self._blocks[self._blockIndex] = string
+    self._blockIndex = self._blockIndex + 1
 end
+
 function OPTcm2Lua:findBlock(x, y, z)
-    return self._blockHash[bit.bxor(x * 73856093, y * 19349663, z * 83492791)] or 1
+    return self._blockHash[blockHash(x, y, z)] or 1
 end
+
 function OPTcm2Lua:addConnection(id1, id2)
-    local cid = self._cid
-    self._connections[cid] = string.format("%d,%d", id1, id2)
-    self._cid = cid + 1
+    self._connections[self._connectionIndex] = string.format("%d,%d", id1, id2)
+    self._connectionIndex = self._connectionIndex + 1
 end
+
 function OPTcm2Lua:addConnectionRaw(string)
-    local cid = self._cid
-    self._connections[cid] = string
-    self._cid = cid + 1
-    return cid
+    self._connections[self._connectionIndex] = string
+    self._connectionIndex = self._connectionIndex + 1
 end
+
 function OPTcm2Lua:export()
-    local blocksStr = table.concat(self._blocks, ";")
-    local connectionsStr = table.concat(self._connections, ";")
-    return blocksStr .. (connectionsStr ~= "" and "?" .. connectionsStr or "") .. "??"
+    local blocksString = table.concat(self._blocks, ";")
+    local connectionsString = table.concat(self._connections, ";")
+    return blocksString .. (connectionsString ~= "" and "?" .. connectionsString or "") .. "??"
 end
 
 return OPTcm2Lua
