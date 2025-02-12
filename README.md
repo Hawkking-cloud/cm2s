@@ -1,14 +1,49 @@
 # cm2s  
-**cm2 script** – A Lua-powered way to generate circuits in CM2.  
+
+
+## a Lua-Powered way to create and connect modules of Circuits in circuit maker 2
+![GitHub last commit](https://img.shields.io/github/last-commit/Hawkking-Cloud/cm2s)
+
+This project is entirely made by Hawk with some help from the Circuit Maker 2 Community. This tool is the first of its kind and allows you to create seperate modules and connect them all together with code. For example instead of making a generator for an adder and a register and wiring it by hand, cm2 Script does it for you. This uses OPTcm2Lua, a heavily optimized register manipulator for Circuit Maker 2.
+
+The following documentation shows 
+* Functions of cm2s.lua (the dependency for usage files)
+* Functions of cm2sDEP.lua (the dependency for structure files)
+* Functions of OPTcm2Lua.lua (the reg manip for both structure files and the master save in cm2s.lua)
+* A small tutorial (at the bottom of the readme
 
 ⚠ **Work in Progress** – Might get abandoned at some point.  
 
-This project uses **OPTcm2Lua** to generate CM2 save strings.  
-- The structure dependency file can be forked to support other registry manipulators.  
+## Simple Tutorial (Linux)
 
-_Readme format is kinda rough right now. Probably gonna use AI to clean it up once the core stuff is done._  
+Easiest way to get started with cm2s
+1. Clone the repo `git clone https://github.com/Hawkking-cloud/cm2s.git` and get into it `cd cm2s`
+2. Install luajit/lua
+- **Debian/Ubuntu:**
+    - `sudo apt update`
+    - `sudo apt install luarocks`
+    - `sudo luarocks install luajit`
+    - `luajit -v`
 
----
+- **Arch Linux:**
+    - `sudo pacman -S luarocks`
+    - `sudo luarocks install luajit`
+    - `luajit -v`
+  
+3. Make a usage file `touch usage.lua`
+  - Template Code: 
+```lua
+package.path = package.path .. ";?.lua;TemplateStructures/?.s.lua" -- this is how you tell the require() function what files to include
+local cm2s = require("cm2s") 
+local registers = cm2s:initStruct( require("registers") ) -- the registers structure file (TemplateStructures/registers.s.lua)
+
+cm2s:add( registers:lite(4) )
+
+print( cm2s:retrieve():export() )
+```
+4. Change usage code and generate structure files to your hearts desire!
+
+
 
 ## cm2s.lua  
 The main interaction point and wrapper for everything.  
@@ -97,34 +132,3 @@ Adds a block to the save.
 
 ### `save:addConnection(block_id_1, block_id_2)`  
 Creates a connection between two blocks using their indices (e.g., `save._bid`).  
-
-# First Time Tutorial on how to use!
-1. Clone the repo `git clone https://github.com/Hawkking-cloud/cm2s.git` and get into it `cd cm2s`
-2. Install luajit/lua (this part of the tutorial is focused on linux, either use wsl or use a linux computer
-
-- **Debian/Ubuntu:**
-    - `sudo apt update`
-    - `sudo apt install luarocks`
-    - `sudo luarocks install luajit`
-    - `luajit -v`
-
-- **Arch Linux:**
-    - `sudo pacman -S luarocks`
-    - `sudo luarocks install luajit`
-    - `luajit -v`
-  
-3. make a usage file `touch usage.lua`
-  - this is the file that will utilize and "wrap" all the files together
-  - template code: 
-```lua
-package.path="?.lua;TemplateStructures/?.s.lua" -- this is how you tell the require() function what files to include
-local cm2s = require("cm2s") 
-local registers = cm2s:initStruct( require("registers") ) -- the registers structure file (TemplateStructures/registers.s.lua)
-
-cm2s:add( registers:lite(4) )
-
-print( cm2s:retrieve():export() )
-```
-4. execute it `luajit usage.lua`
-  - should return a cm2 save string cooresponding to one lite register
- 
