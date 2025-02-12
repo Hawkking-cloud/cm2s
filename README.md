@@ -1,5 +1,5 @@
 # cm2s  
-**cm2: scripted** – A Lua-powered way to generate circuits in CM2.  
+**cm2 script** – A Lua-powered way to generate circuits in CM2.  
 
 ⚠ **Work in Progress** – Might get abandoned at some point.  
 
