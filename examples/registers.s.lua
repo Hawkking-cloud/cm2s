@@ -1,5 +1,5 @@
 local dep = require("cm2sDEP")
-local structure = dep:newSave(0, 0)
+local structure = {}
 local STRUCTZ = structure._zIndex
 local currentY = 0
 
@@ -51,7 +51,6 @@ function structure:lite(bits)
         save:addConnection(output, xorGate)
         save:addConnection(andGate, output)
     end
-
     currentY = currentY + 4
     save.zIndex = STRUCTZ
     return save

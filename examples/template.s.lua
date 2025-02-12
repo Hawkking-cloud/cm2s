@@ -1,6 +1,6 @@
 local dep = require("cm2sDEP")
 -- this is a structure object
-local structure = dep:newSave(0, 0)
+local structure = {}
 -- note: when modeling circuits of a structure file, make sure to use STRUCTZ for
 -- your z values of every block or the blocks will overlap with others
 local structureZ = structure._zIndex
