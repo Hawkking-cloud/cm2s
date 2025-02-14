@@ -14,15 +14,11 @@ function randstring(length)
     return res
 end
 
--- im not sure which one takes priority, cm2s.lua's structure.STRUCTZ or this, and quite frankly im just gonna let it stay
-local zID = 0 -- tells the save what zindex to use
 function dep:newSave(blocks, wires)
     local save = cm2Lua.new(blocks, wires)
     save._inputs = {}
     save._outputs = {}
     save._hash = randstring(10) -- hashing for the connection magic took place in cm2s.lua
-    save._zID = zID
-    zID = zID + 1
 
     function save:manifestInput(name)
         self._inputs[name] = {_hash = self._hash}
