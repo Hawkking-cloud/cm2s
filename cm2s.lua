@@ -9,7 +9,7 @@ local zI = 0 --this increments and tells the structure what zindex to use
 local masterSave = cm2Lua.new(0, 0) --save that is written to when structures are added, this file mainly just wraps all the structures together
 
 function cm2s:initStruct(structure)
-    structure.STRUCTZ = zI
+    structure._structureZ = zI
     zI = zI + 1
     return structure
 end
@@ -19,22 +19,22 @@ local structureOrigins = {} -- had to do some wizardry for this and keeps track 
 
 function cm2s:add(structure)
     --idfk why i did -2 to each, it just works
-    masterSave:allocateBlocks(structure._bid - 2)
-    masterSave:allocateConnections(structure._cid - 2)
+    masterSave:allocateBlocks(structure._blockIndex - 2)
+    masterSave:allocateConnections(structure._connectionIndex - 2)
 
     --wizardry i did to get connections working
-    structureOrigins[structure._hash] = masterSave._bid
+    structureOrigins[structure._hash] = masterSave._blockIndex
 
-    for i = 1, structure._bid - 1 do
+    for i = 1, structure._blockIndex - 1 do
         masterSave:addBlockRaw(structure._blocks[i])
     end
 
-    for i = 1, structure._cid - 1 do
+    for i = 1, structure._connectionIndex - 1 do
         local id1, id2 = structure._connections[i]:match("^(.-)%s*,%s*(.-)$")
         masterSave:addConnectionRaw(tostring(id1 + masterBID - 1) .. "," .. tostring(id2 + masterBID - 1))
     end
 
-    masterBID = masterBID + structure._bid - 1
+    masterBID = masterBID + structure._blockIndex - 1
 
     function structure:getInput(name)
         if self._inputs[name] == nil then
