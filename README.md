@@ -43,7 +43,15 @@ print( cm2s:retrieve():export() )
 ```
 4. Change usage code and generate structure files to your hearts desire!
 
+## Links:
+[cm2s.lua](#cm2slua)  
+[cm2sDEP.lua](#cm2sdeplua)  
+[OPTcm2Lua.lua](#optcm2lualua)  
+  
 
+
+
+---
 
 ## cm2s.lua  
 The main interaction point and wrapper for everything.  
@@ -105,6 +113,22 @@ Adds functions:
 - `save:addInput()`  
 - `save:addOutput()`  
 
+## dep string:
+This is the save you will generate in a structure file using `dep:newSave()`
+below will refrence depSave as this save
+
+### `depSave:manifestInput(name)`
+This function manifests/initalizes an input,  `depSave:addInput()` will error if the input isnt manifested
+
+### `depSave:manifestOutput(name)`
+This function manifests/initalizes an output,  `depSave:addOutput()` will error if the output isnt manifested
+
+### `depSave:addInput(block,name)`
+This function adds a block to the input name
+
+### `depSave:addOutput(block,name)`
+This function adds a block to the output name
+
 ---
 
 ## OPTcm2Lua.lua  
@@ -120,15 +144,21 @@ save:addBlock(5, 2, 0, 0)
 save:addConnection(save._bid-2, save._bid-1) -- more info on save._bid below
 ```
 
-### `save._bid`  
+### `save._blockIndex`  
 Stores the next block ID.  
 Doesn’t use `#save._blocks` for performance reasons.  
-To reference the last block added: `save._bid - 1`  
+To reference the last block added: `save._blockIndex - 1`  
 
-### `save:addBlock(id, x, y, z)`  
+### `save:addBlock(id, x, y, z, meta)`  
 Adds a block to the save.  
 - `id` = The [respective block ID](https://static.wikia.nocookie.net/cm2/images/1/1d/Image_2024-03-16_200149325.png/revision/latest/scale-to-width-down/201?cb=20240529015257)  
-- `x, y, z` = Position  
+- `x, y, z` = Position, optional
+- `meta` = The meta tag, eg: the rgb in an LED, optional
 
-### `save:addConnection(block_id_1, block_id_2)`  
+### `save:addConnection(block_1, block_2)`  
 Creates a connection between two blocks using their indices (e.g., `save._bid`).  
+
+### `save:findBlock(x, y, z)`
+Returns either the block index at that postion, or nil
+
+
